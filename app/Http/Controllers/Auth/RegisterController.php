@@ -43,12 +43,12 @@ class RegisterController extends Controller
     }
 
     public function showRegistrationForm()
-    {
+    {       
         return view('auth.register');
     }
 
     public function register(Request $request)
-    {
+    {       
         $this->validator($request->all())->validate();
 
         $user = $this->create($request->all());
@@ -84,5 +84,42 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
         ]);
+    }
+    public function abcd(){
+        echo 'fsfsdfsd';
+        exit;
+    }
+
+    public function receiveData(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:users',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed',
+            'role' => ['required', 'string', 'in:vendor,user'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Hash the password before storing it in the database
+        $data = [
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'password' => bcrypt($request->input('password')),
+            'role' => $request->input('role'),
+        ];
+
+        // Create a new user record
+        $user = User::create($data);
+
+        if ($user->role == 'vendor') {
+            $message = 'Vendor registered successfully';
+        } else {
+            $message = 'Uendor registered successfully';
+        }
+
+        return response()->json(['message' => $message, 'data' => $user], 201);
     }
 }
