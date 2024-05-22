@@ -90,13 +90,13 @@ class RegisterController extends Controller
         exit;
     }
 
-    public function receiveData(Request $request)
+    public function apiRegister(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
-            'role' => ['required', 'string', 'in:vendor,user'],
+            'role' => ['required', 'string', 'in:admin,vendor,user'],
         ]);
 
         if ($validator->fails()) {
@@ -114,10 +114,12 @@ class RegisterController extends Controller
         // Create a new user record
         $user = User::create($data);
 
-        if ($user->role == 'vendor') {
+        if ($user->role == 'admin') {
+            $message = 'Admin registered successfully';
+        } elseif ($user->role == 'vendor') {
             $message = 'Vendor registered successfully';
         } else {
-            $message = 'Uendor registered successfully';
+            $message = 'User registered successfully';
         }
 
         return response()->json(['message' => $message, 'data' => $user], 201);
